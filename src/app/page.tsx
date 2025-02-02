@@ -20,6 +20,20 @@ export default function Home() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isStart, setIsStart] = useState(false);
   const [userName, setUserName] = useState("");
+  const [score, setScore] = useState(0);
+  const [startTime, setStartTime] = useState(0);
+  const [totalTime, setTotalTime] = useState(0);
+
+  // スコア計算
+  const addResult = (userName: string, startTime: number) => {
+    const endTime = Date.now();
+    const totalTime = endTime - startTime;
+    const timeInSeconds = Math.floor(totalTime / 1000);
+    const baseScore = 10000 / timeInSeconds;
+    // 整数にする
+    const score = Math.floor(baseScore);
+    return { score, totalTime };
+  };
 
   const handleStart = () => {
     if (!userName) {
@@ -27,14 +41,15 @@ export default function Home() {
       return;
     }
     setIsStart(true);
+    const startTime = Date.now();
+    setStartTime(startTime);
   };
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       const currentQuestion = questions[currentQuestionIndex];
       if (
-        e.key.toLowerCase() ===
-        currentQuestion.question[currentPosition].toLowerCase()
+        e.key.toLowerCase() === currentQuestion.question[currentPosition].toLowerCase()
       ) {
         setCurrentPosition((prev) => prev + 1);
       }
@@ -42,6 +57,9 @@ export default function Home() {
       if (currentPosition === currentQuestion.question.length - 1) {
         // 問題がすべて終わった場合
         if (currentQuestionIndex === questions.length - 1) {
+          const { score, totalTime } = addResult(userName, startTime);
+          setScore(score);
+          setTotalTime(totalTime);
           setIsCompleted(true);
         } else {
           setCurrentQuestionIndex((prev) => prev + 1);
@@ -79,7 +97,16 @@ export default function Home() {
   }
 
   if (isCompleted) {
-    return <div>ゲーム終了</div>;
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-black">
+        <div className="text-center p-8">
+          <h1 className="text-4xl font-bold text-white">ゲーム終了</h1>
+          <p className="text-xl text-white">スコア: {score}</p>
+          <p className="text-xl text-white">所要時間: {totalTime}秒</p>
+          <p className="text-xl text-white">ユーザー名: {userName}</p>
+        </div>
+      </main>
+    );
   }
 
   return (
