@@ -25,13 +25,22 @@ export default function Home() {
   const [totalTime, setTotalTime] = useState(0);
 
   // スコア計算
-  const addResult = (userName: string, startTime: number) => {
+  const addResult = async (userName: string, startTime: number) => {
     const endTime = Date.now();
     const totalTime = endTime - startTime;
     const timeInSeconds = Math.floor(totalTime / 1000);
     const baseScore = 10000 / timeInSeconds;
     // 整数にする
     const score = Math.floor(baseScore);
+
+    await fetch("/api/result", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ score, userName }),
+    });
+
     return { score, totalTime };
   };
 
@@ -57,7 +66,7 @@ export default function Home() {
       if (currentPosition === currentQuestion.question.length - 1) {
         // 問題がすべて終わった場合
         if (currentQuestionIndex === questions.length - 1) {
-          const { score, totalTime } = addResult(userName, startTime);
+          const { score, totalTime } = await addResult(userName, startTime);
           setScore(score);
           setTotalTime(totalTime);
           setIsCompleted(true);
