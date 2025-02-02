@@ -1,14 +1,8 @@
-import { Redis } from "@upstash/redis";
+import redis from "@/lib/redis";
 import { Hono } from "hono";
-import { env } from "hono/adapter";
 import { handle } from "hono/vercel";
 
-type EnvConfig = {
-  UPSTASH_REDIS_REST_URL: string;
-  UPSTASH_REDIS_REST_TOKEN: string;
-};
-
-const app = new Hono<{ Bindings: EnvConfig }>().basePath("/api");
+const app = new Hono().basePath("/api");
 
 app.get("/ping", (c) => {
   return c.text("pong");
@@ -21,14 +15,6 @@ app.post("/result", async (c) => {
     if (!score || !userName) {
       throw new Error("Missing score or userName");
     }
-
-    const { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } =
-      env<EnvConfig>(c);
-
-    const redis = new Redis({
-      url: UPSTASH_REDIS_REST_URL,
-      token: UPSTASH_REDIS_REST_TOKEN,
-    });
 
     const result = {
       score: score,
@@ -46,14 +32,6 @@ app.post("/result", async (c) => {
 });
 
 app.get("/rank", async (c) => {
-  const { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } =
-    env<EnvConfig>(c);
-
-  const redis = new Redis({
-    url: UPSTASH_REDIS_REST_URL,
-    token: UPSTASH_REDIS_REST_TOKEN,
-  });
-
   const result = await redis.zrange("typing-score-rank", 0, 9, {
     rev: true,
     withScores: true,
