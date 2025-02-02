@@ -18,6 +18,16 @@ export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isStart, setIsStart] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  const handleStart = () => {
+    if (!userName) {
+      alert("名前を入力してください");
+      return;
+    }
+    setIsStart(true);
+  };
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -43,6 +53,30 @@ export default function Home() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPosition, currentQuestionIndex]);
+
+  if (!isStart) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-black">
+        <div className="text-center p-8">
+          <input
+            type="text"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            placeholder="Enter your name..."
+            className="w-64 p-3 text-lg"
+          />
+        </div>
+        <div>
+          <button
+            onClick={handleStart}
+            className="px-8 py-3 text-xl bg-red-900"
+          >
+            Start Game
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   if (isCompleted) {
     return <div>ゲーム終了</div>;
