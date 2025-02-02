@@ -1,9 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef} from "react";
 
 type Question = {
   question: string;
   image: string;
+};
+
+type Rank = {
+  name: string;
+  score: number;
 };
 
 export default function Home() {
@@ -23,6 +28,25 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
+  const [rank, setRank] = useState<Rank[]>([]);
+  const bgmRef = useRef<HTMLAudioElement| null>(null);
+  const shotSoundRef = useRef<HTMLAudioElement| null>(null);
+
+  useEffect(() => {
+    bgmRef.current = new Audio("/bgm.mp3");
+    shotSoundRef.current = new Audio("/shot.mp3");
+  }, []);
+
+  useEffect(() => {
+    if (isStart && bgmRef.current) {
+      bgmRef.current?.play();
+    }
+
+    if (isCompleted && bgmRef.current) {
+      bgmRef.current?.pause();
+    }
+  }, [isStart, isCompleted]);
+
 
   // スコア計算
   const addResult = async (userName: string, startTime: number) => {
@@ -54,6 +78,12 @@ export default function Home() {
     setStartTime(startTime);
   };
 
+  const getRank = async () => {
+    const response = await fetch("/api/rank");
+    const rank = await response.json();
+    return rank;
+  };
+
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       const currentQuestion = questions[currentQuestionIndex];
@@ -66,11 +96,21 @@ export default function Home() {
       if (currentPosition === currentQuestion.question.length - 1) {
         // 問題がすべて終わった場合
         if (currentQuestionIndex === questions.length - 1) {
+          if (shotSoundRef.current) {
+            shotSoundRef.current.currentTime = 0;
+            shotSoundRef.current.play();
+          }
           const { score, totalTime } = await addResult(userName, startTime);
           setScore(score);
           setTotalTime(totalTime);
+          const rank = await getRank();
+          setRank(rank);
           setIsCompleted(true);
         } else {
+          if (shotSoundRef.current) {
+            shotSoundRef.current.currentTime = 0;
+            shotSoundRef.current.play();
+          }
           setCurrentQuestionIndex((prev) => prev + 1);
           setCurrentPosition(0);
         }
@@ -114,6 +154,26 @@ export default function Home() {
           <p className="text-xl text-white">所要時間: {totalTime}秒</p>
           <p className="text-xl text-white">ユーザー名: {userName}</p>
         </div>
+        <div className="mt-8">
+            <h3 className="text-2xl font-bold text-white">Ranking</h3>
+            {rank.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <p className="text-xl text-white">Loading rank...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {rank.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-around items-center p-3"
+                  >
+                    <span className="text-white">{index + 1}.{item.name}</span>
+                    <span className="text-red-500">{item.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
       </main>
     );
   }
