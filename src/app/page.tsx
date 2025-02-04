@@ -2,7 +2,8 @@
 import { useEffect, useState, useRef} from "react";
 
 type Question = {
-  question: string;
+  statement: string;
+  alphabet: string;
   image: string;
 };
 
@@ -12,14 +13,7 @@ type Rank = {
 };
 
 export default function Home() {
-  const questions: Question[] = [
-    { question: "React", image: "/monster1.jpg" },
-    { question: "TypeScript", image: "/monster2.jpg" },
-    { question: "JISOU", image: "/monster3.jpg" },
-    { question: "GitHub", image: "/monster4.jpg" },
-    { question: "Next.js", image: "/monster5.jpg" },
-  ];
-
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -35,6 +29,7 @@ export default function Home() {
   useEffect(() => {
     bgmRef.current = new Audio("/bgm.mp3");
     shotSoundRef.current = new Audio("/shot.mp3");
+    getQuestions().then((questions) => setQuestions(questions));
   }, []);
 
   useEffect(() => {
@@ -84,16 +79,22 @@ export default function Home() {
     return rank;
   };
 
+  const getQuestions = async () => {
+    const response = await fetch("/api/questions/random");
+    const questions = await response.json();
+    return questions;
+  };
+
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       const currentQuestion = questions[currentQuestionIndex];
       if (
-        e.key.toLowerCase() === currentQuestion.question[currentPosition].toLowerCase()
+        e.key.toLowerCase() === currentQuestion.alphabet[currentPosition].toLowerCase()
       ) {
         setCurrentPosition((prev) => prev + 1);
       }
 
-      if (currentPosition === currentQuestion.question.length - 1) {
+      if (currentPosition === currentQuestion.alphabet.length - 1) {
         // 問題がすべて終わった場合
         if (currentQuestionIndex === questions.length - 1) {
           if (shotSoundRef.current) {
@@ -119,7 +120,7 @@ export default function Home() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPosition, currentQuestionIndex]);
+  }, [currentPosition, currentQuestionIndex, questions]);
 
   if (!isStart) {
     return (
@@ -189,7 +190,7 @@ export default function Home() {
         }}
       >
         <div>
-          {questions[currentQuestionIndex].question
+          {questions[currentQuestionIndex].statement
             .split("")
             .map((char, index) => (
               <span
