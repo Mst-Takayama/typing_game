@@ -1,5 +1,6 @@
 [
 {"statement": "少林寺拳法", "alphabet": [["syourin","shourin"],["zi","ji"],["kenpou"]]},
 {"statement": "松本市", "alphabet": [["matsumoto","matumoto"],["si","shi"]]},
-{"statement": "犬も歩けば棒に当たる", "alphabet": [["inumoarukebabouniataru"]]}
+{"statement": "犬も歩けば棒に当たる", "alphabet": [["inumoarukebabouniataru"]]},
+{"statement":"温故知新", "alphabet": [["onko"],["chi","ti"],["shin","sin"]]}
 ]
