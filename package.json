@@ -11,7 +11,9 @@
   "dependencies": {
     "@upstash/redis": "^1.34.3",
     "hono": "^4.6.20",
+    "hono-pino": "^0.7.0",
     "next": "15.1.6",
+    "pino": "^9.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
