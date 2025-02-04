@@ -1,9 +1,10 @@
-import { createAppWithRedis } from "@/app/utils/factory";
+import type { Hono } from "hono";
+import type { Env } from "@/app/utils/factory";
 
-const app = createAppWithRedis();
+const registerHealthCheckRoutes = (app: Hono<Env>) => {
+  app.get("/", (c) => {
+    return c.json({ message: "ok" });
+  });
+};
 
-app.get("/", (c) => {
-  return c.json({ message: "ok" });
-});
-
-export default app;
+export default registerHealthCheckRoutes;

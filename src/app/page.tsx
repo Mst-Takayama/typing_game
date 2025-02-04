@@ -79,7 +79,7 @@ export default function Home() {
   };
 
   const getRank = async () => {
-    const response = await fetch("/api/result/rank");
+    const response = await fetch("/api/rank");
     const rank = await response.json();
     return rank;
   };
