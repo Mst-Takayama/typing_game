@@ -1,13 +1,18 @@
 "use client";
 import { useEffect, useState, useRef} from "react";
+import StartScreen from "./components/StartScreen";
+import GameScreen from "./components/GameScreen";
+import EndScreen from "./components/EndScreen";
+import cartesianProduct from "@/services/cartesianProduct";
+import Trie from "@/services/judge";
 
-type Question = {
+export type Question = {
   statement: string;
-  alphabet: string;
+  alphabet: string[][];
   image: string;
 };
 
-type Rank = {
+export type Rank = {
   name: string;
   score: number;
 };
@@ -16,6 +21,7 @@ export default function Home() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentPosition, setCurrentPosition] = useState(0);
+  const [currentAlphabet, setCurrentAlphabet] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
   const [isStart, setIsStart] = useState(false);
   const [userName, setUserName] = useState("");
@@ -88,14 +94,22 @@ export default function Home() {
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       const currentQuestion = questions[currentQuestionIndex];
+      const correctAlphabets = cartesianProduct(currentQuestion.alphabet);
+      const trie = new Trie();
+      trie.insert(correctAlphabets);
+
+      const nextAlphabet = trie.charAfter(currentAlphabet);
+
       if (
-        e.key.toLowerCase() === currentQuestion.alphabet[currentPosition].toLowerCase()
+        nextAlphabet?.includes(e.key.toLowerCase())
       ) {
         setCurrentPosition((prev) => prev + 1);
+        setCurrentAlphabet(currentAlphabet + e.key.toLowerCase());
       }
 
-      if (currentPosition === currentQuestion.alphabet.length - 1) {
-        // 問題がすべて終わった場合
+      // 問題がすべて終わった場合
+      // 次の文字が空の配列で帰ってきた場合,最後の文字まで入力したと判定する
+      if (Array.isArray(nextAlphabet) && nextAlphabet.length === 0) {
         if (currentQuestionIndex === questions.length - 1) {
           if (shotSoundRef.current) {
             shotSoundRef.current.currentTime = 0;
@@ -120,90 +134,36 @@ export default function Home() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPosition, currentQuestionIndex, questions]);
+  }, [currentPosition, currentQuestionIndex, questions, currentAlphabet]);
 
   if (!isStart) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-black">
-        <div className="text-center p-8">
-          <input
-            type="text"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            placeholder="Enter your name..."
-            className="w-64 p-3 text-lg"
-          />
-        </div>
-        <div>
-          <button
-            onClick={handleStart}
-            className="px-8 py-3 text-xl bg-red-900"
-          >
-            Start Game
-          </button>
-        </div>
-      </main>
+      <StartScreen
+        userName={userName}
+        setUserName={setUserName}
+        handleStart={handleStart}
+      />
     );
   }
 
   if (isCompleted) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-black">
-        <div className="text-center p-8">
-          <h1 className="text-4xl font-bold text-white">ゲーム終了</h1>
-          <p className="text-xl text-white">スコア: {score}</p>
-          <p className="text-xl text-white">所要時間: {totalTime}秒</p>
-          <p className="text-xl text-white">ユーザー名: {userName}</p>
-        </div>
-        <div className="mt-8">
-            <h3 className="text-2xl font-bold text-white">Ranking</h3>
-            {rank.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8">
-                <p className="text-xl text-white">Loading rank...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {rank.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-around items-center p-3"
-                  >
-                    <span className="text-white">{index + 1}.{item.name}</span>
-                    <span className="text-red-500">{item.score}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-      </main>
+      <EndScreen
+        score={score}
+        totalTime={totalTime}
+        userName={userName}
+        rank={rank}
+      />
     );
   }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
-      <div
-        className="text-center w-full h-screen bg-cover bg-center flex flex-col items-center justify-center"
-        style={{
-          backgroundImage: `url(${questions[currentQuestionIndex].image})`,
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
-          backgroundBlendMode: "overlay",
-        }}
-      >
-        <div>
-          {questions[currentQuestionIndex].statement
-            .split("")
-            .map((char, index) => (
-              <span
-                key={index}
-                style={{
-                  color: index < currentPosition ? "#ff0000" : "white",
-                }}
-              >
-                {char}
-              </span>
-            ))}
-        </div>
-      </div>
+      <GameScreen
+        questions={questions}
+        currentQuestionIndex={currentQuestionIndex}
+        currentPosition={currentPosition}
+      />
     </main>
   );
 }
