@@ -31,10 +31,12 @@ export default function Home() {
   const [rank, setRank] = useState<Rank[]>([]);
   const bgmRef = useRef<HTMLAudioElement| null>(null);
   const shotSoundRef = useRef<HTMLAudioElement| null>(null);
+  const errorSoundRef = useRef<HTMLAudioElement| null>(null);
 
   useEffect(() => {
     bgmRef.current = new Audio("/bgm.mp3");
     shotSoundRef.current = new Audio("/shot.mp3");
+    errorSoundRef.current = new Audio("/error.mp3");
     getQuestions().then((questions) => setQuestions(questions));
   }, []);
 
@@ -105,6 +107,13 @@ export default function Home() {
       ) {
         setCurrentPosition((prev) => prev + 1);
         setCurrentAlphabet(currentAlphabet + e.key.toLowerCase());
+      } else {
+        if (errorSoundRef.current) {
+          errorSoundRef.current.currentTime = 0;
+          errorSoundRef.current.play();
+        }
+        setCurrentAlphabet("");
+        setCurrentPosition(0);
       }
 
       // 問題がすべて終わった場合
