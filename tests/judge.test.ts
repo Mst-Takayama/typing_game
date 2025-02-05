@@ -26,4 +26,10 @@ describe("入力文字列正誤判定テスト", () => {
     expect(trie.charAfter("mate")).toBeNull();
     expect(trie.charAfter("i")).toBeNull();
   });
+
+  test("一番最初の入力の場合", () => {
+    const trie = new Trie();
+    trie.insert(["matsu", "matu"]);
+    expect(trie.charAfter("")).toEqual(["m"]);
+  });
 });
