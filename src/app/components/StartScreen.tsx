@@ -1,5 +1,4 @@
-import React from "react";
-
+import React, { useState } from "react";
 
 type StartScreenProps = {
   userName: string;
@@ -12,6 +11,17 @@ const StartScreen: React.FC<StartScreenProps> = ({
   setUserName,
   handleStart,
 }) => {
+  const [startTime, setStartTime] = useState(0);
+
+  const handleStartClick = () => {
+    if (!userName) {
+      alert("名前を入力してください");
+      return;
+    }
+    setStartTime(Date.now());
+    handleStart();
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-black">
       <div className="text-center p-8">
@@ -25,7 +35,7 @@ const StartScreen: React.FC<StartScreenProps> = ({
       </div>
       <div>
         <button
-          onClick={handleStart}
+          onClick={handleStartClick}
           className="px-8 py-3 text-xl bg-red-900"
         >
           Start Game
