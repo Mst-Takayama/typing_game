@@ -60,6 +60,10 @@ class Trie {
       return [];
     }
 
+    if (node.children.size === 0) {
+      return [];
+    }
+
     return Array.from(node.children.keys());
   }
 }

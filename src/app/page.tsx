@@ -4,7 +4,7 @@ import StartScreen from "./components/StartScreen";
 import GameScreen from "./components/GameScreen";
 import EndScreen from "./components/EndScreen";
 import cartesianProduct from "@/services/cartesianProduct";
-import Trie from "@/services/judge";
+import Trie from "@/services/trie";
 
 export type Question = {
   statement: string;
@@ -19,6 +19,7 @@ export type Rank = {
 
 export default function Home() {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [trie, setTrie] = useState<Trie[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentPosition, setCurrentPosition] = useState(0);
   const [currentAlphabet, setCurrentAlphabet] = useState("");
@@ -35,7 +36,15 @@ export default function Home() {
   useEffect(() => {
     bgmRef.current = new Audio("/bgm.mp3");
     shotSoundRef.current = new Audio("/shot.mp3");
-    getQuestions().then((questions) => setQuestions(questions));
+    getQuestions().then((questions) => {
+      setQuestions(questions);
+      const trie = questions.map((question: Question) => {
+        const trie = new Trie();
+        trie.insert(cartesianProduct(question.alphabet));
+        return trie;
+      });
+      setTrie(trie);
+    });
   }, []);
 
   useEffect(() => {
@@ -91,50 +100,46 @@ export default function Home() {
     return questions;
   };
 
-  useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      const currentQuestion = questions[currentQuestionIndex];
-      const correctAlphabets = cartesianProduct(currentQuestion.alphabet);
-      const trie = new Trie();
-      trie.insert(correctAlphabets);
+useEffect(() => {
+  const handleKeyDown = async (e: KeyboardEvent) => {
+    const currentQuestion = trie[currentQuestionIndex];
+    const nextAlphabet = currentQuestion.charAfter(currentAlphabet);
 
-      const nextAlphabet = trie.charAfter(currentAlphabet);
+    // 入力が正しい場合
+    if (nextAlphabet?.includes(e.key.toLowerCase())) {
+      const currentString = currentAlphabet + e.key.toLowerCase();
+      setCurrentPosition((prev) => prev + 1);
+      setCurrentAlphabet(currentString);
 
-      if (
-        nextAlphabet?.includes(e.key.toLowerCase())
-      ) {
-        setCurrentPosition((prev) => prev + 1);
-        setCurrentAlphabet(currentAlphabet + e.key.toLowerCase());
-      }
+      // 次の文字がない場合、つまり最後の文字を入力した場合
+      if (Array.isArray(currentQuestion.charAfter(currentString)) && currentQuestion.charAfter(currentString)?.length === 0) {
+        if (shotSoundRef.current) {
+          shotSoundRef.current.currentTime = 0;
+          shotSoundRef.current.play();
+        }
 
-      // 問題がすべて終わった場合
-      // 次の文字が空の配列で帰ってきた場合,最後の文字まで入力したと判定する
-      if (Array.isArray(nextAlphabet) && nextAlphabet.length === 0) {
+        // 問題がすべて終わった場合
         if (currentQuestionIndex === questions.length - 1) {
-          if (shotSoundRef.current) {
-            shotSoundRef.current.currentTime = 0;
-            shotSoundRef.current.play();
-          }
           const { score, totalTime } = await addResult(userName, startTime);
           setScore(score);
           setTotalTime(totalTime);
           const rank = await getRank();
           setRank(rank);
           setIsCompleted(true);
-        } else {
-          if (shotSoundRef.current) {
-            shotSoundRef.current.currentTime = 0;
-            shotSoundRef.current.play();
-          }
-          setCurrentQuestionIndex((prev) => prev + 1);
-          setCurrentPosition(0);
+          return;
         }
-      }
-    };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPosition, currentQuestionIndex, questions, currentAlphabet]);
+        // 次の問題に移行する場合
+        setCurrentQuestionIndex((prev) => prev + 1);
+        setCurrentPosition(0);
+        setCurrentAlphabet("");
+      }
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [currentPosition, currentQuestionIndex, currentAlphabet, trie]);
 
   if (!isStart) {
     return (

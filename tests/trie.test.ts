@@ -1,4 +1,4 @@
-import Trie from "../src/services/judge";
+import Trie from "../src/services/trie";
 import { expect, test, describe } from "bun:test";
 
 describe("入力文字列正誤判定テスト", () => {
@@ -17,6 +17,7 @@ describe("入力文字列正誤判定テスト", () => {
   test("最後まで文字を入力した場合", () => {
     const trie = new Trie();
     trie.insert(["matsu", "matu"]);
+    console.log(trie.charAfter("matsu"));
     expect(trie.charAfter("matsu")).toEqual([]);
   });
 
