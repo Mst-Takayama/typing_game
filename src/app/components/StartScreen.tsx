@@ -1,24 +1,26 @@
-import React from "react";
+import { useState } from 'react';
+import { useGame } from '@/context/GameContext';
 
+const StartScreen = () => {
+  const { dispatch } = useGame();
+  const [localUserName, setLocalUserName] = useState('');
 
-type StartScreenProps = {
-  userName: string;
-  setUserName: (userName: string) => void;
-  handleStart: () => void;
-};
+  const handleStart = () => {
+    if (!localUserName) {
+      alert('名前を入力してください');
+      return;
+    }
+    dispatch({ type: 'SET_USERNAME', payload: localUserName });
+    dispatch({ type: 'START_GAME', payload: Date.now() });
+  };
 
-const StartScreen: React.FC<StartScreenProps> = ({
-  userName,
-  setUserName,
-  handleStart,
-}) => {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-black">
       <div className="text-center p-8">
         <input
           type="text"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
+          value={localUserName}
+          onChange={(e) => setLocalUserName(e.target.value)}
           placeholder="Enter your name..."
           className="w-64 p-3 text-lg"
         />
