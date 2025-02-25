@@ -1,0 +1,13 @@
+---
+description: honoのルールを制定
+globs: 
+---
+# ディレクトリ構成
+- /src/app/api/[[...route]]/route.ts
+HonoでNextのRoute Handlersをジャックし
+/src/app/features以下の各routeを呼び出している
+- /src/app/features
+機能ごとのルーティング
+- /src/app/utils/factory.ts
+Honoのインスタンスを作成し各routeで使いまわしている
+ContextにRedisのインスタンスも格納している
