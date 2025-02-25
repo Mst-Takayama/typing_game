@@ -4,7 +4,7 @@ import { useSound } from '@/hooks/useSound';
 
 const EndScreen = () => {
   const { state } = useGame();
-  const { score, totalTime, userName, rank } = state;
+  const { score, totalTime, userName, rank, mistakeCount } = state;
   const { stopBgm } = useSound();
   useEffect(() => {
     stopBgm();
@@ -15,7 +15,8 @@ const EndScreen = () => {
       <div className="text-center p-8">
         <h1 className="text-4xl font-bold text-white">ゲーム終了</h1>
         <p className="text-xl text-white">スコア: {score}</p>
-        <p className="text-xl text-white">所要時間: {totalTime}秒</p>
+        <p className="text-xl text-white">所要時間: {Math.floor(totalTime / 1000)}秒</p>
+        <p className="text-xl text-white">ミス回数: {mistakeCount}回</p>
         <p className="text-xl text-white">ユーザー名: {userName}</p>
       </div>
       <div className="mt-8">

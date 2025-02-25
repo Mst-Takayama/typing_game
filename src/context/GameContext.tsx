@@ -12,6 +12,7 @@ type GameState = {
   rank: Rank[];
   isCompleted: boolean;
   isStart: boolean;
+  mistakeCount: number;
 };
 
 type GameAction = 
@@ -19,6 +20,7 @@ type GameAction =
   | { type: 'SET_USERNAME'; payload: string }
   | { type: 'START_GAME'; payload: number }
   | { type: 'NEXT_QUESTION' }
+  | { type: 'INCREMENT_MISTAKE' }
   | { type: 'COMPLETE_GAME'; payload: { score: number; totalTime: number; rank: Rank[] } };
 
 const initialState: GameState = {
@@ -31,6 +33,7 @@ const initialState: GameState = {
   rank: [],
   isCompleted: false,
   isStart: false,
+  mistakeCount: 0,
 };
 
 const gameReducer = (state: GameState, action: GameAction): GameState => {
@@ -43,6 +46,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, isStart: true, startTime: action.payload };
     case 'NEXT_QUESTION':
       return { ...state, currentQuestionIndex: state.currentQuestionIndex + 1 };
+    case 'INCREMENT_MISTAKE':
+      return { ...state, mistakeCount: state.mistakeCount + 1 };
     case 'COMPLETE_GAME':
       return { 
         ...state, 
