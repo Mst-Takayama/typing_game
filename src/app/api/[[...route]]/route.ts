@@ -15,3 +15,6 @@ registerQuestionsRoutes(app);
 
 export const GET = handle(app);
 export const POST = handle(app);
+
+// RPCクライアント生成用にアプリの型をエクスポート
+export type AppType = typeof app;
