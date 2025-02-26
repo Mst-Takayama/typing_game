@@ -24,9 +24,25 @@ const QuestionDisplay = ({ statement, currentPosition }: QuestionDisplayProps) =
   const typedText = statement.substring(0, currentPosition);
   const remainingText = statement.substring(currentPosition);
 
+  // 進捗率を計算
+  const progressPercentage = statement.length > 0 
+    ? Math.floor((currentPosition / statement.length) * 100) 
+    : 0;
+
   return (
     <div className="p-6 bg-black bg-opacity-70 rounded-lg max-w-2xl">
       <h2 className="text-3xl font-bold text-white mb-6">{currentQuestion?.statement}</h2>
+      
+      {/* 進捗バー */}
+      <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4">
+        <div 
+          className="bg-green-500 h-2.5 rounded-full transition-all duration-300 ease-in-out" 
+          style={{ width: `${progressPercentage}%` }}
+        ></div>
+      </div>
+      <div className="text-right text-sm text-gray-400 mb-4">
+        {currentPosition}/{statement.length} 文字 ({progressPercentage}%)
+      </div>
       
       <div className="text-2xl mb-8">
         <span className="text-green-500">{typedText}</span>
