@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
-import { calculateScore } from '@/utils/score';
-import { postResult, getRank } from '@/services/api';
+import { postResult, getRank, calculateScoreRPC } from '@/services/api';
 import Trie from '@/services/trie';
 
 type UseKeyboardInputProps = {
@@ -26,7 +25,8 @@ export const useKeyboardInput = ({ trie, playShotSound }: UseKeyboardInputProps)
         playShotSound();
 
         if (state.currentQuestionIndex === state.questions.length - 1) {
-          const { score, totalTime } = calculateScore(state.startTime, state.mistakeCount);
+          // RPCを使用してスコア計算
+          const { score, totalTime } = await calculateScoreRPC(state.startTime, state.mistakeCount);
           await postResult(state.userName, score);
           const rank = await getRank();
           dispatch({ 

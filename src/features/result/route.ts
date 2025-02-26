@@ -1,5 +1,14 @@
 import type { Env } from "@/app/utils/factory";
 import type { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
+import { calculateScore } from "@/utils/score";
+
+// スコア計算のリクエストスキーマ
+const calculateScoreSchema = z.object({
+  startTime: z.number(),
+  mistakeCount: z.number(),
+});
 
 const registerResultRoutes = (app: Hono<Env>) => {
   app.post("/result", async (c) => {
@@ -43,6 +52,13 @@ const registerResultRoutes = (app: Hono<Env>) => {
     }
 
     return c.json(rank);
+  });
+
+  // スコア計算のRPCエンドポイント
+  app.post("/calculate-score", zValidator("json", calculateScoreSchema), (c) => {
+    const { startTime, mistakeCount } = c.req.valid("json");
+    const result = calculateScore(startTime, mistakeCount);
+    return c.json(result);
   });
 };
 
